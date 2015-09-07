@@ -6,6 +6,10 @@ The `gls` command uses the [iTerm2 image capability](http://www.iterm2.com/image
 
 The current version if very basic, with no support for any of the `ls` options.
 
+## Install with Homebrew
+
+    $ brew install https://raw.githubusercontent.com/rs/homebrew/gls/Library/Formula/gls.rb
+
 ## Build from Source
 
     $ xcodebuild SYMROOT=build
