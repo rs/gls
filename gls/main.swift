@@ -26,29 +26,34 @@ var error: NSError? = nil
 let pathURL = NSURL(fileURLWithPath: path)
 let properties = [NSURLIsSymbolicLinkKey, NSURLFileResourceTypeKey]
 let contents = fileManager.contentsOfDirectoryAtURL(pathURL!, includingPropertiesForKeys: properties, options: (.SkipsHiddenFiles), error: &error)
+let graphicOutput = isatty(STDOUT_FILENO) != 0
 
 for url in contents as! [NSURL] {
     path = url.path!
-    // Get file icon
-    let icon = workspace.iconForFile(path)
 
-    // Resize
-    let scaledSize = NSSize(width: 16, height: 16)
-    let scaledIcon = NSImage(size: scaledSize)
-    scaledIcon.lockFocus()
-    icon.drawInRect(NSRect(x: 0, y: 0, width: scaledSize.width, height: scaledSize.height), fromRect: CGRect(origin: CGPointZero, size: icon.size), operation: NSCompositingOperation.CompositeSourceOver, fraction: CGFloat(1.0))
-    scaledIcon.unlockFocus()
+    if graphicOutput {
+        // Get file icon
+        let icon = workspace.iconForFile(path)
 
-    // Convert to base64
-    var data: NSData = scaledIcon.TIFFRepresentation!
-    var bitmap: NSBitmapImageRep = NSBitmapImageRep(data: data)!
-    data = bitmap.representationUsingType(NSBitmapImageFileType.NSPNGFileType, properties: [:])!
-    let iconB64 = data.base64EncodedStringWithOptions(NSDataBase64EncodingOptions.allZeros)
+        // Resize
+        let scaledSize = NSSize(width: 16, height: 16)
+        let scaledIcon = NSImage(size: scaledSize)
+        scaledIcon.lockFocus()
+        icon.drawInRect(NSRect(x: 0, y: 0, width: scaledSize.width, height: scaledSize.height), fromRect: CGRect(origin: CGPointZero, size: icon.size), operation: NSCompositingOperation.CompositeSourceOver, fraction: CGFloat(1.0))
+        scaledIcon.unlockFocus()
 
-    // Output line
-    print("\u{001B}]1337;File=inline=1;height=1;width=2;preserveAspectRatio=true:")
-    print(iconB64)
-    print("\u{0007}")
+        // Convert to base64
+        var data: NSData = scaledIcon.TIFFRepresentation!
+        var bitmap: NSBitmapImageRep = NSBitmapImageRep(data: data)!
+        data = bitmap.representationUsingType(NSBitmapImageFileType.NSPNGFileType, properties: [:])!
+        let iconB64 = data.base64EncodedStringWithOptions(NSDataBase64EncodingOptions.allZeros)
+
+        // Output line
+
+        print("\u{001B}]1337;File=inline=1;height=1;width=2;preserveAspectRatio=true:")
+        print(iconB64)
+        print("\u{0007}")
+    }
     print(path.lastPathComponent)
 
     // Add file type specific info
