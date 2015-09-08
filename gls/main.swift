@@ -32,12 +32,12 @@ if let pathURL = NSURL(fileURLWithPath: path) {
     contents = fileManager.contentsOfDirectoryAtURL(pathURL, includingPropertiesForKeys: properties, options: (.SkipsHiddenFiles), error: &error)
     if error != nil {
         if let msg = error?.localizedDescription {
-            println(msg)
+            print(msg, appendNewline: true)
         }
         exit(1)
     }
 } else {
-    println("Invalid path")
+    print("Invalid path\n")
     exit(1)
 }
 
@@ -82,5 +82,5 @@ for url in contents as! [NSURL] {
             break
         }
     }
-    println()
+    print("\n")
 }
