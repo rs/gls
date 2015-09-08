@@ -16,17 +16,24 @@ let workspace = NSWorkspace.sharedWorkspace()
 var path = fileManager.currentDirectoryPath
 if Process.arguments.count >= 2 {
     path = Process.arguments[1]
-    if Array(path)[0] != "/" {
-        path = fileManager.currentDirectoryPath.stringByAppendingPathComponent(path)
+    if Array(arrayLiteral: path)[0] != "/" {
+        // Use NSString as Xcode 7 deosn't bridge path related methods on String
+        let cwd = fileManager.currentDirectoryPath as NSString
+        path = cwd.stringByAppendingPathComponent(path)
     }
 }
 
 // List directory content
-var error: NSError? = nil
-let pathURL = NSURL(fileURLWithPath: path)
-let properties = [NSURLIsSymbolicLinkKey, NSURLFileResourceTypeKey]
-let contents = fileManager.contentsOfDirectoryAtURL(pathURL!, includingPropertiesForKeys: properties, options: (.SkipsHiddenFiles), error: &error)
+var contents : [AnyObject]?
 let graphicOutput = isatty(STDOUT_FILENO) != 0
+if let pathURL = NSURL(fileURLWithPath: path) {
+    var error: NSError? = nil
+    let properties = [NSURLIsSymbolicLinkKey, NSURLFileResourceTypeKey]
+    contents = fileManager.contentsOfDirectoryAtURL(pathURL, includingPropertiesForKeys: properties, options: (.SkipsHiddenFiles), error: &error)
+} else {
+    println("Invalid path")
+    exit(1)
+}
 
 for url in contents as! [NSURL] {
     path = url.path!
@@ -49,7 +56,6 @@ for url in contents as! [NSURL] {
         let iconB64 = data.base64EncodedStringWithOptions(NSDataBase64EncodingOptions.allZeros)
 
         // Output line
-
         print("\u{001B}]1337;File=inline=1;height=1;width=2;preserveAspectRatio=true:")
         print(iconB64)
         print("\u{0007}")
