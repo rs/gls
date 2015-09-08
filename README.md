@@ -4,7 +4,7 @@ The `gls` command uses the [iTerm2 (version 3 beta) image capability](http://www
 
 <img src="screenshot.png" width="442" height="310">
 
-The current version if very basic, with no support for any of the `ls` options.
+The current version is very basic, with no support for any of the `ls` options.
 
 ## Install with Homebrew
 
