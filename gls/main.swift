@@ -30,6 +30,12 @@ if let pathURL = NSURL(fileURLWithPath: path) {
     var error: NSError? = nil
     let properties = [NSURLIsSymbolicLinkKey, NSURLFileResourceTypeKey]
     contents = fileManager.contentsOfDirectoryAtURL(pathURL, includingPropertiesForKeys: properties, options: (.SkipsHiddenFiles), error: &error)
+    if error != nil {
+        if let msg = error?.localizedDescription {
+            println(msg)
+        }
+        exit(1)
+    }
 } else {
     println("Invalid path")
     exit(1)
