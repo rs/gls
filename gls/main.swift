@@ -26,18 +26,12 @@ if Process.arguments.count >= 2 {
 // List directory content
 var contents : [AnyObject]?
 let graphicOutput = isatty(STDOUT_FILENO) != 0
-if let pathURL = NSURL(fileURLWithPath: path) {
-    var error: NSError? = nil
-    let properties = [NSURLIsSymbolicLinkKey, NSURLFileResourceTypeKey]
-    contents = fileManager.contentsOfDirectoryAtURL(pathURL, includingPropertiesForKeys: properties, options: (.SkipsHiddenFiles), error: &error)
-    if error != nil {
-        if let msg = error?.localizedDescription {
-            print(msg, appendNewline: true)
-        }
-        exit(1)
-    }
-} else {
-    print("Invalid path\n")
+let pathURL = NSURL(fileURLWithPath: path)
+let properties = [NSURLIsSymbolicLinkKey, NSURLFileResourceTypeKey]
+do {
+    contents = try fileManager.contentsOfDirectoryAtURL(pathURL, includingPropertiesForKeys: properties, options: (.SkipsHiddenFiles))
+} catch let error as NSError {
+    print(error.localizedDescription, terminator: "\n")
     exit(1)
 }
 
@@ -59,28 +53,33 @@ for url in contents as! [NSURL] {
         var data: NSData = scaledIcon.TIFFRepresentation!
         var bitmap: NSBitmapImageRep = NSBitmapImageRep(data: data)!
         data = bitmap.representationUsingType(NSBitmapImageFileType.NSPNGFileType, properties: [:])!
-        let iconB64 = data.base64EncodedStringWithOptions(NSDataBase64EncodingOptions.allZeros)
+        let iconB64 = data.base64EncodedStringWithOptions(NSDataBase64EncodingOptions())
 
         // Output line
-        print("\u{001B}]1337;File=inline=1;height=1;width=2;preserveAspectRatio=true:")
-        print(iconB64)
-        print("\u{0007}")
+        print("\u{001B}]1337;File=inline=1;height=1;width=2;preserveAspectRatio=true:", terminator: "")
+        print(iconB64, terminator: "")
+        print("\u{0007}", terminator: "")
     }
-    print(path.lastPathComponent)
+    print(url.lastPathComponent!, terminator: "")
 
-    // Add file type specific info
-    var rsrc: AnyObject?
-    url.getResourceValue(&rsrc, forKey: NSURLFileResourceTypeKey, error: nil)
-    if let type = rsrc as? String {
-        switch type {
-        case NSURLFileResourceTypeDirectory:
-            print("/")
-        case NSURLFileResourceTypeSymbolicLink:
-            print(" -> ")
-            print(fileManager.destinationOfSymbolicLinkAtPath(path, error: nil)!)
-        default:
-            break
+    do {
+        // Add file type specific info
+        var rsrc: AnyObject?
+        try url.getResourceValue(&rsrc, forKey: NSURLFileResourceTypeKey)
+        if let type = rsrc as? String {
+            switch type {
+            case NSURLFileResourceTypeDirectory:
+                print("/", terminator: "")
+            case NSURLFileResourceTypeSymbolicLink:
+                do {
+                    var dest = try fileManager.destinationOfSymbolicLinkAtPath(path)
+                    print(" -> ", terminator: "")
+                    print(dest, terminator: "")
+                }
+            default:
+                break
+            }
         }
     }
-    print("\n")
+    print("") // Prints the CR
 }
