@@ -12,6 +12,10 @@ Make sure you are using the lastest [beta of iTerm2 version 3](http://www.iterm2
 
     $ brew install https://raw.githubusercontent.com/rs/homebrew/gls/Library/Formula/gls.rb
 
+For El Capitan users:
+
+    $ brew install --HEAD https://raw.githubusercontent.com/rs/homebrew/gls/Library/Formula/gls.rb
+
 ## Build from Source
 
     $ xcodebuild SYMROOT=build
